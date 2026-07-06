@@ -1,8 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[Union]
-public readonly record struct Variant : IUnion
+public readonly struct Variant
 {
     private readonly VariantType type;
     private readonly InlineData data;
@@ -151,6 +150,102 @@ public readonly record struct Variant : IUnion
         Write(ref this.data, value);
     }
 
+    public static implicit operator Variant(bool value) => new(value);
+
+    public static implicit operator Variant(char value) => new(value);
+
+    public static implicit operator Variant(sbyte value) => new(value);
+
+    public static implicit operator Variant(byte value) => new(value);
+
+    public static implicit operator Variant(short value) => new(value);
+
+    public static implicit operator Variant(ushort value) => new(value);
+
+    public static implicit operator Variant(int value) => new(value);
+
+    public static implicit operator Variant(uint value) => new(value);
+
+    public static implicit operator Variant(long value) => new(value);
+
+    public static implicit operator Variant(nint value) => new(value);
+
+    public static implicit operator Variant(ulong value) => new(value);
+
+    public static implicit operator Variant(nuint value) => new(value);
+
+    public static implicit operator Variant(Int128 value) => new(value);
+
+    public static implicit operator Variant(UInt128 value) => new(value);
+
+    public static implicit operator Variant(Half value) => new(value);
+
+    public static implicit operator Variant(float value) => new(value);
+
+    public static implicit operator Variant(double value) => new(value);
+
+    public static implicit operator Variant(decimal value) => new(value);
+
+    public static implicit operator Variant(TimeSpan value) => new(value);
+
+    public static implicit operator Variant(DateOnly value) => new(value);
+
+    public static implicit operator Variant(TimeOnly value) => new(value);
+
+    public static implicit operator Variant(DateTime value) => new(value);
+
+    public static implicit operator Variant(DateTimeOffset value) => new(value);
+
+    public static implicit operator Variant(Guid value) => new(value);
+
+    public static explicit operator bool(Variant value) => value.GetTypedValue<bool>(VariantType.Bool);
+
+    public static explicit operator char(Variant value) => value.GetTypedValue<char>(VariantType.Char);
+
+    public static explicit operator sbyte(Variant value) => value.GetTypedValue<sbyte>(VariantType.Int8);
+
+    public static explicit operator byte(Variant value) => value.GetTypedValue<byte>(VariantType.UInt8);
+
+    public static explicit operator short(Variant value) => value.GetInt16Value();
+
+    public static explicit operator ushort(Variant value) => value.GetUInt16Value();
+
+    public static explicit operator int(Variant value) => value.GetInt32Value();
+
+    public static explicit operator uint(Variant value) => value.GetUInt32Value();
+
+    public static explicit operator long(Variant value) => value.GetInt64Value();
+
+    public static explicit operator nint(Variant value) => value.GetIntPtrValue();
+
+    public static explicit operator ulong(Variant value) => value.GetUInt64Value();
+
+    public static explicit operator nuint(Variant value) => value.GetUIntPtrValue();
+
+    public static explicit operator Int128(Variant value) => value.GetInt128Value();
+
+    public static explicit operator UInt128(Variant value) => value.GetUInt128Value();
+
+    public static explicit operator Half(Variant value) => value.GetTypedValue<Half>(VariantType.Half);
+
+    public static explicit operator float(Variant value) => value.GetTypedValue<float>(VariantType.Float);
+
+    public static explicit operator double(Variant value) => value.GetTypedValue<double>(VariantType.Double);
+
+    public static explicit operator decimal(Variant value) => value.GetTypedValue<decimal>(VariantType.Decimal);
+
+    public static explicit operator TimeSpan(Variant value) => value.GetTypedValue<TimeSpan>(VariantType.TimeSpan);
+
+    public static explicit operator DateOnly(Variant value) => value.GetTypedValue<DateOnly>(VariantType.DateOnly);
+
+    public static explicit operator TimeOnly(Variant value) => value.GetTypedValue<TimeOnly>(VariantType.TimeOnly);
+
+    public static explicit operator DateTime(Variant value) => value.GetTypedValue<DateTime>(VariantType.DateTime);
+
+    public static explicit operator DateTimeOffset(Variant value) => value.GetTypedValue<DateTimeOffset>(VariantType.DateTimeOffset);
+
+    public static explicit operator Guid(Variant value) => value.GetTypedValue<Guid>(VariantType.Guid);
+
     public object Value => this.type switch
     {
         VariantType.Bool => this.Read<bool>(),
@@ -188,25 +283,25 @@ public readonly record struct Variant : IUnion
 
     public bool TryGetValue(out byte value) => this.TryGetTypedValue(VariantType.UInt8, out value);
 
-    public bool TryGetValue(out short value) => this.TryGetTypedValue(VariantType.Int16, out value);
+    public bool TryGetValue(out short value) => this.TryGetInt16Value(out value);
 
-    public bool TryGetValue(out ushort value) => this.TryGetTypedValue(VariantType.UInt16, out value);
+    public bool TryGetValue(out ushort value) => this.TryGetUInt16Value(out value);
 
-    public bool TryGetValue(out int value) => this.TryGetTypedValue(VariantType.Int32, out value);
+    public bool TryGetValue(out int value) => this.TryGetInt32Value(out value);
 
-    public bool TryGetValue(out uint value) => this.TryGetTypedValue(VariantType.UInt32, out value);
+    public bool TryGetValue(out uint value) => this.TryGetUInt32Value(out value);
 
-    public bool TryGetValue(out long value) => this.TryGetTypedValue(VariantType.Int64, out value);
+    public bool TryGetValue(out long value) => this.TryGetInt64Value(out value);
 
-    public bool TryGetValue(out nint value) => this.TryGetTypedValue(VariantType.IntPtr, out value);
+    public bool TryGetValue(out nint value) => this.TryGetIntPtrValue(out value);
 
-    public bool TryGetValue(out ulong value) => this.TryGetTypedValue(VariantType.UInt64, out value);
+    public bool TryGetValue(out ulong value) => this.TryGetUInt64Value(out value);
 
-    public bool TryGetValue(out nuint value) => this.TryGetTypedValue(VariantType.UIntPtr, out value);
+    public bool TryGetValue(out nuint value) => this.TryGetUIntPtrValue(out value);
 
-    public bool TryGetValue(out Int128 value) => this.TryGetTypedValue(VariantType.Int128, out value);
+    public bool TryGetValue(out Int128 value) => this.TryGetInt128Value(out value);
 
-    public bool TryGetValue(out UInt128 value) => this.TryGetTypedValue(VariantType.UInt128, out value);
+    public bool TryGetValue(out UInt128 value) => this.TryGetUInt128Value(out value);
 
     public bool TryGetValue(out Half value) => this.TryGetTypedValue(VariantType.Half, out value);
 
@@ -232,6 +327,52 @@ public readonly record struct Variant : IUnion
         where T : unmanaged
         => MemoryMarshal.Write(data[..], in value);
 
+    private readonly T GetTypedValue<T>(VariantType expectedType)
+        where T : unmanaged
+    {
+        if (this.type == expectedType)
+        {
+            return this.Read<T>();
+        }
+
+        throw this.CreateInvalidCastException(expectedType.ToString());
+    }
+
+    private readonly short GetInt16Value()
+        => this.TryGetInt16Value(out short value) ? value : throw this.CreateInvalidCastException(nameof(Int16));
+
+    private readonly ushort GetUInt16Value()
+        => this.TryGetUInt16Value(out ushort value) ? value : throw this.CreateInvalidCastException(nameof(UInt16));
+
+    private readonly int GetInt32Value()
+        => this.TryGetInt32Value(out int value) ? value : throw this.CreateInvalidCastException(nameof(Int32));
+
+    private readonly uint GetUInt32Value()
+        => this.TryGetUInt32Value(out uint value) ? value : throw this.CreateInvalidCastException(nameof(UInt32));
+
+    private readonly long GetInt64Value()
+        => this.TryGetInt64Value(out long value) ? value : throw this.CreateInvalidCastException(nameof(Int64));
+
+    private readonly nint GetIntPtrValue()
+        => this.TryGetIntPtrValue(out nint value) ? value : throw this.CreateInvalidCastException(nameof(IntPtr));
+
+    private readonly ulong GetUInt64Value()
+        => this.TryGetUInt64Value(out ulong value) ? value : throw this.CreateInvalidCastException(nameof(UInt64));
+
+    private readonly nuint GetUIntPtrValue()
+        => this.TryGetUIntPtrValue(out nuint value) ? value : throw this.CreateInvalidCastException(nameof(UIntPtr));
+
+    private readonly Int128 GetInt128Value()
+        => this.TryGetInt128Value(out Int128 value) ? value : throw this.CreateInvalidCastException(nameof(Int128));
+
+    private readonly UInt128 GetUInt128Value()
+        => this.TryGetUInt128Value(out UInt128 value) ? value : throw this.CreateInvalidCastException(nameof(UInt128));
+
+    private readonly InvalidCastException CreateInvalidCastException(string expectedTypeName)
+        => new(this.type == VariantType.None
+            ? "Variant does not contain a value."
+            : $"Variant contains a {this.type} value, which cannot be retrieved as a {expectedTypeName} value.");
+
     private readonly bool TryGetTypedValue<T>(VariantType expectedType, out T value)
         where T : unmanaged
     {
@@ -243,6 +384,274 @@ public readonly record struct Variant : IUnion
 
         value = default;
         return false;
+    }
+
+    private readonly bool TryGetInt16Value(out short value)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                value = this.Read<sbyte>();
+                return true;
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.Int16:
+                value = this.Read<short>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetUInt16Value(out ushort value)
+    {
+        switch (this.type)
+        {
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetInt32Value(out int value)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                value = this.Read<sbyte>();
+                return true;
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.Int16:
+                value = this.Read<short>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.Int32:
+                value = this.Read<int>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetUInt32Value(out uint value)
+    {
+        switch (this.type)
+        {
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetInt64Value(out long value)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                value = this.Read<sbyte>();
+                return true;
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.Int16:
+                value = this.Read<short>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.Int32:
+                value = this.Read<int>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            case VariantType.Int64:
+                value = this.Read<long>();
+                return true;
+            case VariantType.IntPtr:
+                value = this.Read<nint>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetIntPtrValue(out nint value)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                value = this.Read<sbyte>();
+                return true;
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.Int16:
+                value = this.Read<short>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.Int32:
+                value = this.Read<int>();
+                return true;
+            case VariantType.UInt32 when IntPtr.Size == 8:
+                value = (nint)this.Read<uint>();
+                return true;
+            case VariantType.Int64 when IntPtr.Size == 8:
+                value = (nint)this.Read<long>();
+                return true;
+            case VariantType.IntPtr:
+                value = this.Read<nint>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetUInt64Value(out ulong value)
+    {
+        switch (this.type)
+        {
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            case VariantType.UInt64:
+                value = this.Read<ulong>();
+                return true;
+            case VariantType.UIntPtr:
+                value = this.Read<nuint>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetUIntPtrValue(out nuint value)
+    {
+        switch (this.type)
+        {
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            case VariantType.UInt64 when IntPtr.Size == 8:
+                value = (nuint)this.Read<ulong>();
+                return true;
+            case VariantType.UIntPtr:
+                value = this.Read<nuint>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetInt128Value(out Int128 value)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                value = this.Read<sbyte>();
+                return true;
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.Int16:
+                value = this.Read<short>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.Int32:
+                value = this.Read<int>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            case VariantType.Int64:
+                value = this.Read<long>();
+                return true;
+            case VariantType.IntPtr:
+                value = (Int128)this.Read<nint>();
+                return true;
+            case VariantType.UInt64:
+                value = this.Read<ulong>();
+                return true;
+            case VariantType.UIntPtr:
+                value = (Int128)this.Read<nuint>();
+                return true;
+            case VariantType.Int128:
+                value = this.Read<Int128>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
+    }
+
+    private readonly bool TryGetUInt128Value(out UInt128 value)
+    {
+        switch (this.type)
+        {
+            case VariantType.UInt8:
+                value = this.Read<byte>();
+                return true;
+            case VariantType.UInt16:
+                value = this.Read<ushort>();
+                return true;
+            case VariantType.UInt32:
+                value = this.Read<uint>();
+                return true;
+            case VariantType.UInt64:
+                value = this.Read<ulong>();
+                return true;
+            case VariantType.UIntPtr:
+                value = (UInt128)this.Read<nuint>();
+                return true;
+            case VariantType.UInt128:
+                value = this.Read<UInt128>();
+                return true;
+            default:
+                value = default;
+                return false;
+        }
     }
 
     private readonly T Read<T>()

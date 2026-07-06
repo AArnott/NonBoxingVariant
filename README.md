@@ -9,11 +9,11 @@ Use `TryGetValue(...)` to read the typed payload without boxing. Accessing `Valu
 | Category | Types |
 | --- | --- |
 | Boolean and character | `bool`, `char` |
-| Signed integers | `sbyte`, `short`, `int`, `long`, `nint`, `Int128` |
-| Unsigned integers | `byte`, `ushort`, `uint`, `ulong`, `nuint`, `UInt128` |
-| Floating point | `Half`, `float`, `double` |
+| Signed integers | `sbyte`, `short`, `int`, `long`, `nint` + `Int128` on .NET 8+ |
+| Unsigned integers | `byte`, `ushort`, `uint`, `ulong`, `nuint` + `UInt128` on .NET 8+ |
+| Floating point | `float`, `double` + `Half` on .NET 8+ |
 | Other numerics | `decimal` |
-| Date and time | `TimeSpan`, `DateOnly`, `TimeOnly`, `DateTime`, `DateTimeOffset` |
+| Date and time | `TimeSpan`, `DateTime`, `DateTimeOffset` + `DateOnly`/`TimeOnly` on .NET 8+ |
 | Identifier | `Guid` |
 
 ## Creating a `Variant`

@@ -1,6 +1,14 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+#if NET
+using IntegerSignedMagnitude = System.Int128;
+using IntegerMagnitude = System.UInt128;
+#else
+using IntegerSignedMagnitude = System.Int64;
+using IntegerMagnitude = System.UInt64;
+#endif
+
 [Union]
 public readonly struct Variant : IEquatable<Variant>, IUnion
 {
@@ -79,6 +87,7 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         Write(ref this.data, value);
     }
 
+#if NET
     public Variant(Int128 value)
     {
         this.type = VariantType.Int128;
@@ -91,11 +100,24 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         Write(ref this.data, value);
     }
 
+    public Variant(DateOnly value)
+    {
+        this.type = VariantType.DateOnly;
+        Write(ref this.data, value);
+    }
+
+    public Variant(TimeOnly value)
+    {
+        this.type = VariantType.TimeOnly;
+        Write(ref this.data, value);
+    }
+
     public Variant(Half value)
     {
         this.type = VariantType.Half;
         Write(ref this.data, value);
     }
+#endif
 
     public Variant(float value)
     {
@@ -118,18 +140,6 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
     public Variant(TimeSpan value)
     {
         this.type = VariantType.TimeSpan;
-        Write(ref this.data, value);
-    }
-
-    public Variant(DateOnly value)
-    {
-        this.type = VariantType.DateOnly;
-        Write(ref this.data, value);
-    }
-
-    public Variant(TimeOnly value)
-    {
-        this.type = VariantType.TimeOnly;
         Write(ref this.data, value);
     }
 
@@ -175,11 +185,17 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
 
     public static explicit operator nuint(Variant value) => value.GetUIntPtrValue();
 
+#if NET
     public static explicit operator Int128(Variant value) => value.GetInt128Value();
 
     public static explicit operator UInt128(Variant value) => value.GetUInt128Value();
 
     public static explicit operator Half(Variant value) => value.GetTypedValue<Half>(VariantType.Half);
+
+    public static explicit operator DateOnly(Variant value) => value.GetTypedValue<DateOnly>(VariantType.DateOnly);
+
+    public static explicit operator TimeOnly(Variant value) => value.GetTypedValue<TimeOnly>(VariantType.TimeOnly);
+#endif
 
     public static explicit operator float(Variant value) => value.GetTypedValue<float>(VariantType.Float);
 
@@ -188,10 +204,6 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
     public static explicit operator decimal(Variant value) => value.GetTypedValue<decimal>(VariantType.Decimal);
 
     public static explicit operator TimeSpan(Variant value) => value.GetTypedValue<TimeSpan>(VariantType.TimeSpan);
-
-    public static explicit operator DateOnly(Variant value) => value.GetTypedValue<DateOnly>(VariantType.DateOnly);
-
-    public static explicit operator TimeOnly(Variant value) => value.GetTypedValue<TimeOnly>(VariantType.TimeOnly);
 
     public static explicit operator DateTime(Variant value) => value.GetTypedValue<DateTime>(VariantType.DateTime);
 
@@ -205,8 +217,8 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
 
     public readonly bool Equals(Variant other)
     {
-        if (this.TryGetIntegerEqualityValue(out UInt128 thisMagnitude, out bool thisIsNegative)
-            && other.TryGetIntegerEqualityValue(out UInt128 otherMagnitude, out bool otherIsNegative))
+        if (this.TryGetIntegerEqualityValue(out IntegerMagnitude thisMagnitude, out bool thisIsNegative)
+            && other.TryGetIntegerEqualityValue(out IntegerMagnitude otherMagnitude, out bool otherIsNegative))
         {
             return thisIsNegative == otherIsNegative && thisMagnitude == otherMagnitude;
         }
@@ -231,15 +243,17 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
             VariantType.IntPtr => this.Read<nint>().Equals(other.Read<nint>()),
             VariantType.UInt64 => this.Read<ulong>().Equals(other.Read<ulong>()),
             VariantType.UIntPtr => this.Read<nuint>().Equals(other.Read<nuint>()),
+#if NET
             VariantType.Int128 => this.Read<Int128>().Equals(other.Read<Int128>()),
             VariantType.UInt128 => this.Read<UInt128>().Equals(other.Read<UInt128>()),
             VariantType.Half => this.Read<Half>().Equals(other.Read<Half>()),
+            VariantType.DateOnly => this.Read<DateOnly>().Equals(other.Read<DateOnly>()),
+            VariantType.TimeOnly => this.Read<TimeOnly>().Equals(other.Read<TimeOnly>()),
+#endif
             VariantType.Float => this.Read<float>().Equals(other.Read<float>()),
             VariantType.Double => this.Read<double>().Equals(other.Read<double>()),
             VariantType.Decimal => this.Read<decimal>().Equals(other.Read<decimal>()),
             VariantType.TimeSpan => this.Read<TimeSpan>().Equals(other.Read<TimeSpan>()),
-            VariantType.DateOnly => this.Read<DateOnly>().Equals(other.Read<DateOnly>()),
-            VariantType.TimeOnly => this.Read<TimeOnly>().Equals(other.Read<TimeOnly>()),
             VariantType.DateTime => this.Read<DateTime>().Equals(other.Read<DateTime>()),
             VariantType.DateTimeOffset => this.Read<DateTimeOffset>().Equals(other.Read<DateTimeOffset>()),
             VariantType.Guid => this.Read<Guid>().Equals(other.Read<Guid>()),
@@ -251,9 +265,9 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
 
     public override readonly int GetHashCode()
     {
-        if (this.TryGetIntegerEqualityValue(out UInt128 magnitude, out bool isNegative))
+        if (this.TryGetIntegerEqualityValue(out IntegerMagnitude magnitude, out bool isNegative))
         {
-            return HashCode.Combine(isNegative, (ulong)(magnitude >> 64), (ulong)magnitude);
+            return GetIntegerHashCode(magnitude, isNegative);
         }
 
         return this.type switch
@@ -261,13 +275,15 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
             VariantType.None => 0,
             VariantType.Bool => HashCode.Combine(this.type, this.Read<bool>()),
             VariantType.Char => HashCode.Combine(this.type, this.Read<char>()),
+#if NET
             VariantType.Half => HashCode.Combine(this.type, this.Read<Half>()),
+            VariantType.DateOnly => HashCode.Combine(this.type, this.Read<DateOnly>()),
+            VariantType.TimeOnly => HashCode.Combine(this.type, this.Read<TimeOnly>()),
+#endif
             VariantType.Float => HashCode.Combine(this.type, this.Read<float>()),
             VariantType.Double => HashCode.Combine(this.type, this.Read<double>()),
             VariantType.Decimal => HashCode.Combine(this.type, this.Read<decimal>()),
             VariantType.TimeSpan => HashCode.Combine(this.type, this.Read<TimeSpan>()),
-            VariantType.DateOnly => HashCode.Combine(this.type, this.Read<DateOnly>()),
-            VariantType.TimeOnly => HashCode.Combine(this.type, this.Read<TimeOnly>()),
             VariantType.DateTime => HashCode.Combine(this.type, this.Read<DateTime>()),
             VariantType.DateTimeOffset => HashCode.Combine(this.type, this.Read<DateTimeOffset>()),
             VariantType.Guid => HashCode.Combine(this.type, this.Read<Guid>()),
@@ -289,15 +305,17 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         VariantType.IntPtr => this.Read<nint>(),
         VariantType.UInt64 => this.Read<ulong>(),
         VariantType.UIntPtr => this.Read<nuint>(),
+#if NET
         VariantType.Int128 => this.Read<Int128>(),
         VariantType.UInt128 => this.Read<UInt128>(),
         VariantType.Half => this.Read<Half>(),
+        VariantType.DateOnly => this.Read<DateOnly>(),
+        VariantType.TimeOnly => this.Read<TimeOnly>(),
+#endif
         VariantType.Float => this.Read<float>(),
         VariantType.Double => this.Read<double>(),
         VariantType.Decimal => this.Read<decimal>(),
         VariantType.TimeSpan => this.Read<TimeSpan>(),
-        VariantType.DateOnly => this.Read<DateOnly>(),
-        VariantType.TimeOnly => this.Read<TimeOnly>(),
         VariantType.DateTime => this.Read<DateTime>(),
         VariantType.DateTimeOffset => this.Read<DateTimeOffset>(),
         VariantType.Guid => this.Read<Guid>(),
@@ -328,11 +346,17 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
 
     public bool TryGetValue(out nuint value) => this.TryGetUIntPtrValue(out value);
 
+#if NET
     public bool TryGetValue(out Int128 value) => this.TryGetInt128Value(out value);
 
     public bool TryGetValue(out UInt128 value) => this.TryGetUInt128Value(out value);
 
     public bool TryGetValue(out Half value) => this.TryGetTypedValue(VariantType.Half, out value);
+
+    public bool TryGetValue(out DateOnly value) => this.TryGetTypedValue(VariantType.DateOnly, out value);
+
+    public bool TryGetValue(out TimeOnly value) => this.TryGetTypedValue(VariantType.TimeOnly, out value);
+#endif
 
     public bool TryGetValue(out float value) => this.TryGetTypedValue(VariantType.Float, out value);
 
@@ -342,19 +366,26 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
 
     public bool TryGetValue(out TimeSpan value) => this.TryGetTypedValue(VariantType.TimeSpan, out value);
 
-    public bool TryGetValue(out DateOnly value) => this.TryGetTypedValue(VariantType.DateOnly, out value);
-
-    public bool TryGetValue(out TimeOnly value) => this.TryGetTypedValue(VariantType.TimeOnly, out value);
-
     public bool TryGetValue(out DateTime value) => this.TryGetTypedValue(VariantType.DateTime, out value);
 
     public bool TryGetValue(out DateTimeOffset value) => this.TryGetTypedValue(VariantType.DateTimeOffset, out value);
 
     public bool TryGetValue(out Guid value) => this.TryGetTypedValue(VariantType.Guid, out value);
 
-    private static void Write<T>(ref InlineData data, T value)
-        where T : unmanaged
-        => MemoryMarshal.Write(data[..], in value);
+    #if NET
+        private static void Write<T>(ref InlineData data, T value)
+            where T : unmanaged
+            => MemoryMarshal.Write(data[..], in value);
+    #else
+        private static unsafe void Write<T>(ref InlineData data, T value)
+            where T : unmanaged
+        {
+            fixed (byte* bytes = data.buffer)
+            {
+                Buffer.MemoryCopy(&value, bytes, 16, sizeof(T));
+            }
+        }
+    #endif
 
     private readonly T GetTypedValue<T>(VariantType expectedType)
         where T : unmanaged
@@ -391,11 +422,13 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
     private readonly nuint GetUIntPtrValue()
         => this.TryGetUIntPtrValue(out nuint value) ? value : throw this.CreateInvalidCastException(nameof(UIntPtr));
 
+#if NET
     private readonly Int128 GetInt128Value()
         => this.TryGetInt128Value(out Int128 value) ? value : throw this.CreateInvalidCastException(nameof(Int128));
 
     private readonly UInt128 GetUInt128Value()
         => this.TryGetUInt128Value(out UInt128 value) ? value : throw this.CreateInvalidCastException(nameof(UInt128));
+#endif
 
     private readonly InvalidCastException CreateInvalidCastException(string expectedTypeName)
         => new(this.type == VariantType.None
@@ -612,6 +645,7 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         }
     }
 
+#if NET
     private readonly bool TryGetInt128Value(out Int128 value)
     {
         switch (this.type)
@@ -682,8 +716,9 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
                 return false;
         }
     }
+#endif
 
-    private readonly bool TryGetIntegerEqualityValue(out UInt128 magnitude, out bool isNegative)
+    private readonly bool TryGetIntegerEqualityValue(out IntegerMagnitude magnitude, out bool isNegative)
     {
         switch (this.type)
         {
@@ -709,20 +744,22 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
                 CreateSignedIntegerEqualityValue(this.Read<long>(), out magnitude, out isNegative);
                 return true;
             case VariantType.IntPtr:
-                CreateSignedIntegerEqualityValue((Int128)this.Read<nint>(), out magnitude, out isNegative);
+                CreateSignedIntegerEqualityValue(this.Read<nint>(), out magnitude, out isNegative);
                 return true;
             case VariantType.UInt64:
                 CreateUnsignedIntegerEqualityValue(this.Read<ulong>(), out magnitude, out isNegative);
                 return true;
             case VariantType.UIntPtr:
-                CreateUnsignedIntegerEqualityValue((UInt128)this.Read<nuint>(), out magnitude, out isNegative);
+                CreateUnsignedIntegerEqualityValue(this.Read<nuint>(), out magnitude, out isNegative);
                 return true;
+#if NET
             case VariantType.Int128:
                 CreateSignedIntegerEqualityValue(this.Read<Int128>(), out magnitude, out isNegative);
                 return true;
             case VariantType.UInt128:
                 CreateUnsignedIntegerEqualityValue(this.Read<UInt128>(), out magnitude, out isNegative);
                 return true;
+#endif
             default:
                 magnitude = default;
                 isNegative = false;
@@ -730,21 +767,46 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         }
     }
 
-    private static void CreateSignedIntegerEqualityValue(Int128 value, out UInt128 magnitude, out bool isNegative)
+    private static void CreateSignedIntegerEqualityValue(IntegerSignedMagnitude value, out IntegerMagnitude magnitude, out bool isNegative)
     {
         isNegative = value < 0;
+#if NET
         magnitude = isNegative ? (UInt128)(-(value + 1)) + 1 : (UInt128)value;
+#else
+        magnitude = isNegative ? unchecked((ulong)(-(value + 1))) + 1UL : unchecked((ulong)value);
+#endif
     }
 
-    private static void CreateUnsignedIntegerEqualityValue(UInt128 value, out UInt128 magnitude, out bool isNegative)
+    private static void CreateUnsignedIntegerEqualityValue(IntegerMagnitude value, out IntegerMagnitude magnitude, out bool isNegative)
     {
         magnitude = value;
         isNegative = false;
     }
 
-    private readonly T Read<T>()
-        where T : unmanaged
-        => MemoryMarshal.Read<T>(this.data[..]);
+    private static int GetIntegerHashCode(IntegerMagnitude magnitude, bool isNegative)
+    {
+#if NET
+        return HashCode.Combine(isNegative, (ulong)(magnitude >> 64), (ulong)magnitude);
+#else
+        return HashCode.Combine(isNegative, magnitude);
+#endif
+    }
+
+    #if NET
+        private readonly T Read<T>()
+            where T : unmanaged
+            => MemoryMarshal.Read<T>(this.data[..]);
+    #else
+        private readonly unsafe T Read<T>()
+            where T : unmanaged
+        {
+            InlineData data = this.data;
+            byte* bytes = data.buffer;
+            T value = default;
+            Buffer.MemoryCopy(bytes, &value, sizeof(T), sizeof(T));
+            return value;
+        }
+    #endif
 
     private enum VariantType : byte
     {
@@ -775,9 +837,16 @@ public readonly struct Variant : IEquatable<Variant>, IUnion
         Guid,
     }
 
+    #if NET
     [InlineArray(16)] // large enough for a Guid
     private struct InlineData
     {
         private byte _element0;
     }
+#else
+    private unsafe struct InlineData
+    {
+        public fixed byte buffer[16];
+    }
+#endif
 }

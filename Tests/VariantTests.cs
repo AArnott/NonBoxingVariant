@@ -70,11 +70,13 @@
             return (success, value);
         });
 
+#if NET
         await AssertRoundTrip(new Variant(Int128.Parse("-17014118346046923173168730371588410572")), Int128.Parse("-17014118346046923173168730371588410572"), static variant =>
         {
             var success = variant.TryGetValue(out Int128 value);
             return (success, value);
         });
+#endif
     }
 
     [Test]
@@ -110,11 +112,13 @@
             return (success, value);
         });
 
+#if NET
         await AssertRoundTrip(new Variant(UInt128.Parse("34028236692093846346337460743176821145")), UInt128.Parse("34028236692093846346337460743176821145"), static variant =>
         {
             var success = variant.TryGetValue(out UInt128 value);
             return (success, value);
         });
+#endif
     }
 
     [Test]
@@ -138,6 +142,7 @@
             return (success, widened);
         }, static variant => (long)variant);
 
+#if NET
         await AssertWideningConversion(-9_876_543_210L, (Int128)(-9_876_543_210L), static value => value, static variant =>
         {
             var success = variant.TryGetValue(out Int128 widened);
@@ -149,6 +154,7 @@
             var success = variant.TryGetValue(out UInt128 widened);
             return (success, widened);
         }, static variant => (UInt128)variant);
+#endif
 
         await AssertWideningConversion((nuint)654_321, 654_321UL, static value => value, static variant =>
         {
@@ -209,11 +215,13 @@
     [Test]
     public async Task FloatingPointValues()
     {
+#if NET
         await AssertRoundTrip(new Variant((Half)1.5f), (Half)1.5f, static variant =>
         {
             var success = variant.TryGetValue(out Half value);
             return (success, value);
         });
+#endif
 
         await AssertRoundTrip(new Variant(123.5f), 123.5f, static variant =>
         {
@@ -247,6 +255,7 @@
             return (success, value);
         });
 
+#if NET
         await AssertRoundTrip(new Variant(new DateOnly(2026, 7, 6)), new DateOnly(2026, 7, 6), static variant =>
         {
             var success = variant.TryGetValue(out DateOnly value);
@@ -258,6 +267,7 @@
             var success = variant.TryGetValue(out TimeOnly value);
             return (success, value);
         });
+#endif
 
         var dateTime = new DateTime(2026, 7, 6, 9, 50, 46, 123, DateTimeKind.Utc);
         await AssertRoundTrip(new Variant(dateTime), dateTime, static variant =>
@@ -299,9 +309,11 @@
         await Assert.That(guidVariant.TryGetValue(out bool boolValue)).IsFalse();
         await Assert.That(boolValue).IsFalse();
 
+#if NET
         var dateVariant = new Variant(new DateOnly(2026, 7, 6));
         await Assert.That(dateVariant.TryGetValue(out TimeSpan timeSpanValue)).IsFalse();
         await Assert.That(timeSpanValue).IsEqualTo(TimeSpan.Zero);
+#endif
     }
 
     [Test]
@@ -321,8 +333,10 @@
     {
         await AssertVariantsEqual((byte)42, (short)42);
         await AssertVariantsEqual(42, 42U);
+#if NET
         await AssertVariantsEqual(42L, (UInt128)42);
         await AssertVariantsEqual((Int128)42, (UInt128)42);
+#endif
 
         if (IntPtr.Size == 8)
         {
@@ -361,15 +375,19 @@
         await AssertImplicitAndExplicitRoundTrip((nint)(-321_123), static value => value, static variant => (nint)variant);
         await AssertImplicitAndExplicitRoundTrip(12_345_678_901_234_567_890UL, static value => value, static variant => (ulong)variant);
         await AssertImplicitAndExplicitRoundTrip((nuint)654_321, static value => value, static variant => (nuint)variant);
+#if NET
         await AssertImplicitAndExplicitRoundTrip(Int128.Parse("-17014118346046923173168730371588410572"), static value => value, static variant => (Int128)variant);
         await AssertImplicitAndExplicitRoundTrip(UInt128.Parse("34028236692093846346337460743176821145"), static value => value, static variant => (UInt128)variant);
         await AssertImplicitAndExplicitRoundTrip((Half)1.5f, static value => value, static variant => (Half)variant);
+#endif
         await AssertImplicitAndExplicitRoundTrip(123.5f, static value => value, static variant => (float)variant);
         await AssertImplicitAndExplicitRoundTrip(456.25d, static value => value, static variant => (double)variant);
         await AssertImplicitAndExplicitRoundTrip(7922816251426433759354395.0335m, static value => value, static variant => (decimal)variant);
         await AssertImplicitAndExplicitRoundTrip(TimeSpan.FromTicks(9876543210), static value => value, static variant => (TimeSpan)variant);
+#if NET
         await AssertImplicitAndExplicitRoundTrip(new DateOnly(2026, 7, 6), static value => value, static variant => (DateOnly)variant);
         await AssertImplicitAndExplicitRoundTrip(new TimeOnly(9, 50, 46, 123), static value => value, static variant => (TimeOnly)variant);
+#endif
         await AssertImplicitAndExplicitRoundTrip(new DateTime(2026, 7, 6, 9, 50, 46, 123, DateTimeKind.Utc), static value => value, static variant => (DateTime)variant);
         await AssertImplicitAndExplicitRoundTrip(new DateTimeOffset(2026, 7, 6, 9, 50, 46, 123, TimeSpan.FromHours(-6)), static value => value, static variant => (DateTimeOffset)variant);
         await AssertImplicitAndExplicitRoundTrip(Guid.Parse("e63bcfc0-c8a3-4d11-9958-7f042e6cbef0"), static value => value, static variant => (Guid)variant);

@@ -300,6 +300,36 @@
     }
 
     [Test]
+    public async Task IntegerVariantsCompareEqualAcrossWidths()
+    {
+        await AssertVariantsEqual((byte)42, (short)42);
+        await AssertVariantsEqual(42, 42U);
+        await AssertVariantsEqual(42L, (UInt128)42);
+        await AssertVariantsEqual((Int128)42, (UInt128)42);
+
+        if (IntPtr.Size == 8)
+        {
+            await AssertVariantsEqual((nint)42, (nuint)42);
+            await AssertVariantsEqual(42U, (nint)42);
+        }
+    }
+
+    [Test]
+    public async Task VariantEqualityDistinguishesDifferentNumericValuesAndNonIntegerTypes()
+    {
+        await AssertVariantsNotEqual((short)-1, (ushort)65535);
+        await AssertVariantsNotEqual(42, 43U);
+        await AssertVariantsNotEqual('A', 65);
+        await AssertVariantsNotEqual(true, 1);
+
+        Variant left = default;
+        Variant right = default;
+        await Assert.That(left.Equals(right)).IsTrue();
+        await Assert.That(left == right).IsTrue();
+        await Assert.That(left.GetHashCode()).IsEqualTo(right.GetHashCode());
+    }
+
+    [Test]
     public async Task ImplicitAndExplicitOperatorsRoundTripValues()
     {
         await AssertImplicitAndExplicitRoundTrip(true, static value => value, static variant => (bool)variant);
@@ -376,6 +406,23 @@
         await Assert.That(success).IsFalse();
         await Assert.That(value).IsEqualTo(default(TTo));
         await AssertInvalidCast(() => _ = fromVariant(variant));
+    }
+
+    private static async Task AssertVariantsEqual(Variant left, Variant right)
+    {
+        await Assert.That(left.Equals(right)).IsTrue();
+        await Assert.That(right.Equals(left)).IsTrue();
+        await Assert.That(left == right).IsTrue();
+        await Assert.That(left != right).IsFalse();
+        await Assert.That(left.GetHashCode()).IsEqualTo(right.GetHashCode());
+    }
+
+    private static async Task AssertVariantsNotEqual(Variant left, Variant right)
+    {
+        await Assert.That(left.Equals(right)).IsFalse();
+        await Assert.That(right.Equals(left)).IsFalse();
+        await Assert.That(left == right).IsFalse();
+        await Assert.That(left != right).IsTrue();
     }
 
     private static async Task AssertInvalidCast(Action cast)

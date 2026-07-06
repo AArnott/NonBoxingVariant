@@ -122,5 +122,6 @@ Console.WriteLine(number);                             // 0
 
 - `TryGetValue` and the explicit cast operators allow safe integer widening conversions based on type range, not on the specific runtime value.
 - Signed/unsigned changes are allowed only when the destination type can represent the full range of the stored type.
+- Equality compares integer payloads by numeric value, so integer variants with the same value compare equal even when their widths differ (for example `byte(42)` equals `long(42)`).
 - `DateTime.Kind` and `DateTimeOffset.Offset` are preserved.
 - The inline storage is 16 bytes, which is large enough for the currently supported payloads, including `Guid`.

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public readonly struct Variant
+public readonly struct Variant : IEquatable<Variant>
 {
     private readonly VariantType type;
     private readonly InlineData data;
@@ -245,6 +245,82 @@ public readonly struct Variant
     public static explicit operator DateTimeOffset(Variant value) => value.GetTypedValue<DateTimeOffset>(VariantType.DateTimeOffset);
 
     public static explicit operator Guid(Variant value) => value.GetTypedValue<Guid>(VariantType.Guid);
+
+    public static bool operator ==(Variant left, Variant right) => left.Equals(right);
+
+    public static bool operator !=(Variant left, Variant right) => !left.Equals(right);
+
+    public readonly bool Equals(Variant other)
+    {
+        if (this.TryGetIntegerEqualityValue(out UInt128 thisMagnitude, out bool thisIsNegative)
+            && other.TryGetIntegerEqualityValue(out UInt128 otherMagnitude, out bool otherIsNegative))
+        {
+            return thisIsNegative == otherIsNegative && thisMagnitude == otherMagnitude;
+        }
+
+        if (this.type != other.type)
+        {
+            return false;
+        }
+
+        return this.type switch
+        {
+            VariantType.None => true,
+            VariantType.Bool => this.Read<bool>().Equals(other.Read<bool>()),
+            VariantType.Char => this.Read<char>().Equals(other.Read<char>()),
+            VariantType.Int8 => this.Read<sbyte>().Equals(other.Read<sbyte>()),
+            VariantType.UInt8 => this.Read<byte>().Equals(other.Read<byte>()),
+            VariantType.Int16 => this.Read<short>().Equals(other.Read<short>()),
+            VariantType.UInt16 => this.Read<ushort>().Equals(other.Read<ushort>()),
+            VariantType.Int32 => this.Read<int>().Equals(other.Read<int>()),
+            VariantType.UInt32 => this.Read<uint>().Equals(other.Read<uint>()),
+            VariantType.Int64 => this.Read<long>().Equals(other.Read<long>()),
+            VariantType.IntPtr => this.Read<nint>().Equals(other.Read<nint>()),
+            VariantType.UInt64 => this.Read<ulong>().Equals(other.Read<ulong>()),
+            VariantType.UIntPtr => this.Read<nuint>().Equals(other.Read<nuint>()),
+            VariantType.Int128 => this.Read<Int128>().Equals(other.Read<Int128>()),
+            VariantType.UInt128 => this.Read<UInt128>().Equals(other.Read<UInt128>()),
+            VariantType.Half => this.Read<Half>().Equals(other.Read<Half>()),
+            VariantType.Float => this.Read<float>().Equals(other.Read<float>()),
+            VariantType.Double => this.Read<double>().Equals(other.Read<double>()),
+            VariantType.Decimal => this.Read<decimal>().Equals(other.Read<decimal>()),
+            VariantType.TimeSpan => this.Read<TimeSpan>().Equals(other.Read<TimeSpan>()),
+            VariantType.DateOnly => this.Read<DateOnly>().Equals(other.Read<DateOnly>()),
+            VariantType.TimeOnly => this.Read<TimeOnly>().Equals(other.Read<TimeOnly>()),
+            VariantType.DateTime => this.Read<DateTime>().Equals(other.Read<DateTime>()),
+            VariantType.DateTimeOffset => this.Read<DateTimeOffset>().Equals(other.Read<DateTimeOffset>()),
+            VariantType.Guid => this.Read<Guid>().Equals(other.Read<Guid>()),
+            _ => false,
+        };
+    }
+
+    public override readonly bool Equals(object? obj) => obj is Variant other && this.Equals(other);
+
+    public override readonly int GetHashCode()
+    {
+        if (this.TryGetIntegerEqualityValue(out UInt128 magnitude, out bool isNegative))
+        {
+            return HashCode.Combine(isNegative, (ulong)(magnitude >> 64), (ulong)magnitude);
+        }
+
+        return this.type switch
+        {
+            VariantType.None => 0,
+            VariantType.Bool => HashCode.Combine(this.type, this.Read<bool>()),
+            VariantType.Char => HashCode.Combine(this.type, this.Read<char>()),
+            VariantType.Half => HashCode.Combine(this.type, this.Read<Half>()),
+            VariantType.Float => HashCode.Combine(this.type, this.Read<float>()),
+            VariantType.Double => HashCode.Combine(this.type, this.Read<double>()),
+            VariantType.Decimal => HashCode.Combine(this.type, this.Read<decimal>()),
+            VariantType.TimeSpan => HashCode.Combine(this.type, this.Read<TimeSpan>()),
+            VariantType.DateOnly => HashCode.Combine(this.type, this.Read<DateOnly>()),
+            VariantType.TimeOnly => HashCode.Combine(this.type, this.Read<TimeOnly>()),
+            VariantType.DateTime => HashCode.Combine(this.type, this.Read<DateTime>()),
+            VariantType.DateTimeOffset => HashCode.Combine(this.type, this.Read<DateTimeOffset>()),
+            VariantType.Guid => HashCode.Combine(this.type, this.Read<Guid>()),
+            _ => throw new InvalidOperationException(),
+        };
+    }
 
     public object Value => this.type switch
     {
@@ -652,6 +728,65 @@ public readonly struct Variant
                 value = default;
                 return false;
         }
+    }
+
+    private readonly bool TryGetIntegerEqualityValue(out UInt128 magnitude, out bool isNegative)
+    {
+        switch (this.type)
+        {
+            case VariantType.Int8:
+                CreateSignedIntegerEqualityValue(this.Read<sbyte>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UInt8:
+                CreateUnsignedIntegerEqualityValue(this.Read<byte>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.Int16:
+                CreateSignedIntegerEqualityValue(this.Read<short>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UInt16:
+                CreateUnsignedIntegerEqualityValue(this.Read<ushort>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.Int32:
+                CreateSignedIntegerEqualityValue(this.Read<int>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UInt32:
+                CreateUnsignedIntegerEqualityValue(this.Read<uint>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.Int64:
+                CreateSignedIntegerEqualityValue(this.Read<long>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.IntPtr:
+                CreateSignedIntegerEqualityValue((Int128)this.Read<nint>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UInt64:
+                CreateUnsignedIntegerEqualityValue(this.Read<ulong>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UIntPtr:
+                CreateUnsignedIntegerEqualityValue((UInt128)this.Read<nuint>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.Int128:
+                CreateSignedIntegerEqualityValue(this.Read<Int128>(), out magnitude, out isNegative);
+                return true;
+            case VariantType.UInt128:
+                CreateUnsignedIntegerEqualityValue(this.Read<UInt128>(), out magnitude, out isNegative);
+                return true;
+            default:
+                magnitude = default;
+                isNegative = false;
+                return false;
+        }
+    }
+
+    private static void CreateSignedIntegerEqualityValue(Int128 value, out UInt128 magnitude, out bool isNegative)
+    {
+        isNegative = value < 0;
+        magnitude = isNegative ? (UInt128)(-(value + 1)) + 1 : (UInt128)value;
+    }
+
+    private static void CreateUnsignedIntegerEqualityValue(UInt128 value, out UInt128 magnitude, out bool isNegative)
+    {
+        magnitude = value;
+        isNegative = false;
     }
 
     private readonly T Read<T>()

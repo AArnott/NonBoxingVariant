@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="NonBoxingVariant/NonBoxingVariant.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+</Solution>

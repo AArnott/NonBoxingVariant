@@ -1,4 +1,6 @@
-﻿public class VariantTests
+﻿using NonBoxingVariant;
+
+public class VariantTests
 {
     [Test]
     public async Task SyntaxSugar()

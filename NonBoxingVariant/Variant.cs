@@ -9,8 +9,10 @@ using IntegerSignedMagnitude = System.Int64;
 using IntegerMagnitude = System.UInt64;
 #endif
 
+namespace NonBoxingVariant;
+
 [Union]
-public readonly struct Variant : IEquatable<Variant>, IUnion
+public readonly struct Variant : IEquatable<Variant>
 {
     private readonly VariantType type;
     private readonly InlineData data;

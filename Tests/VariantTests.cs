@@ -3,20 +3,30 @@
 public class VariantTests
 {
     [Test]
-    public async Task SyntaxSugar()
+    public async Task IntegerWideningIsChecks()
     {
-        Variant v = 5;
-        switch (v)
-        {
-            case int i:
-                await Assert.That(i).IsEqualTo(5);
-                break;
-            default:
-                Assert.Fail("Unrecognized type");
-                break;
-        }
+        Variant us = (ushort)5;
+        await Assert.That(us is ushort).IsTrue();
+        await Assert.That(us is int).IsTrue();
+        await Assert.That(us is uint).IsTrue();
+        await Assert.That(us is short).IsFalse();
+        await Assert.That(us is byte).IsFalse();
+        await Assert.That(us is sbyte).IsFalse();
+    }
 
-        await Assert.That(v is int).IsTrue();
+    /// <summary>
+    /// Verifies that a <see cref="float"/> is not implicitly widened to a <see cref="double"/>
+    /// or <see cref="decimal"/> when stored in a <see cref="Variant"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="float"/> to <see cref="double"/> conversions can actually be lossy.
+    /// </remarks>
+    [Test]
+    public async Task FloatingPointDoNotWiden()
+    {
+        Variant us = 5.0f;
+        await Assert.That(us is float).IsTrue();
+        await Assert.That(us is double).IsFalse();
     }
 
     [Test]

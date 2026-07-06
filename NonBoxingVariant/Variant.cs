@@ -380,20 +380,20 @@ public readonly struct Variant : IEquatable<Variant>
 
     public bool TryGetValue(out Guid value) => this.TryGetTypedValue(VariantType.Guid, out value);
 
-    #if NET
-        private static void Write<T>(ref InlineData data, T value)
-            where T : unmanaged
-            => MemoryMarshal.Write(data[..], in value);
-    #else
-        private static unsafe void Write<T>(ref InlineData data, T value)
-            where T : unmanaged
+#if NET
+    private static void Write<T>(ref InlineData data, T value)
+        where T : unmanaged
+        => MemoryMarshal.Write(data[..], in value);
+#else
+    private static unsafe void Write<T>(ref InlineData data, T value)
+        where T : unmanaged
+    {
+        fixed (byte* bytes = data.buffer)
         {
-            fixed (byte* bytes = data.buffer)
-            {
-                Buffer.MemoryCopy(&value, bytes, 16, sizeof(T));
-            }
+            Buffer.MemoryCopy(&value, bytes, 16, sizeof(T));
         }
-    #endif
+    }
+#endif
 
     private readonly T GetTypedValue<T>(VariantType expectedType)
         where T : unmanaged
@@ -800,21 +800,21 @@ public readonly struct Variant : IEquatable<Variant>
 #endif
     }
 
-    #if NET
-        private readonly T Read<T>()
-            where T : unmanaged
-            => MemoryMarshal.Read<T>(this.data[..]);
-    #else
-        private readonly unsafe T Read<T>()
-            where T : unmanaged
-        {
-            InlineData data = this.data;
-            byte* bytes = data.buffer;
-            T value = default;
-            Buffer.MemoryCopy(bytes, &value, sizeof(T), sizeof(T));
-            return value;
-        }
-    #endif
+#if NET
+    private readonly T Read<T>()
+        where T : unmanaged
+        => MemoryMarshal.Read<T>(this.data[..]);
+#else
+    private readonly unsafe T Read<T>()
+        where T : unmanaged
+    {
+        InlineData data = this.data;
+        byte* bytes = data.buffer;
+        T value = default;
+        Buffer.MemoryCopy(bytes, &value, sizeof(T), sizeof(T));
+        return value;
+    }
+#endif
 
     private enum VariantType : byte
     {
@@ -845,7 +845,7 @@ public readonly struct Variant : IEquatable<Variant>
         Guid,
     }
 
-    #if NET
+#if NET
     [InlineArray(16)] // large enough for a Guid
     private struct InlineData
     {

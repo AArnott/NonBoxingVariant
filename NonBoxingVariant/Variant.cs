@@ -18,7 +18,7 @@ namespace NonBoxingVariant;
 /// See also <see href="https://github.com/JeremyKuhne/touki/blob/main/touki/Touki/Value.cs">this alternative implementation</see>.
 /// </remarks>
 [Union]
-public readonly struct Variant : IEquatable<Variant>
+public readonly struct Variant : IEquatable<Variant>, IUnion
 {
     private readonly VariantType type;
     private readonly InlineData data;

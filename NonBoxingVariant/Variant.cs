@@ -1,7 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public readonly struct Variant : IEquatable<Variant>
+[Union]
+public readonly struct Variant : IEquatable<Variant>, IUnion
 {
     private readonly VariantType type;
     private readonly InlineData data;
@@ -149,54 +150,6 @@ public readonly struct Variant : IEquatable<Variant>
         this.type = VariantType.Guid;
         Write(ref this.data, value);
     }
-
-    public static implicit operator Variant(bool value) => new(value);
-
-    public static implicit operator Variant(char value) => new(value);
-
-    public static implicit operator Variant(sbyte value) => new(value);
-
-    public static implicit operator Variant(byte value) => new(value);
-
-    public static implicit operator Variant(short value) => new(value);
-
-    public static implicit operator Variant(ushort value) => new(value);
-
-    public static implicit operator Variant(int value) => new(value);
-
-    public static implicit operator Variant(uint value) => new(value);
-
-    public static implicit operator Variant(long value) => new(value);
-
-    public static implicit operator Variant(nint value) => new(value);
-
-    public static implicit operator Variant(ulong value) => new(value);
-
-    public static implicit operator Variant(nuint value) => new(value);
-
-    public static implicit operator Variant(Int128 value) => new(value);
-
-    public static implicit operator Variant(UInt128 value) => new(value);
-
-    public static implicit operator Variant(Half value) => new(value);
-
-    public static implicit operator Variant(float value) => new(value);
-
-    public static implicit operator Variant(double value) => new(value);
-
-    public static implicit operator Variant(decimal value) => new(value);
-
-    public static implicit operator Variant(TimeSpan value) => new(value);
-
-    public static implicit operator Variant(DateOnly value) => new(value);
-
-    public static implicit operator Variant(TimeOnly value) => new(value);
-
-    public static implicit operator Variant(DateTime value) => new(value);
-
-    public static implicit operator Variant(DateTimeOffset value) => new(value);
-
-    public static implicit operator Variant(Guid value) => new(value);
 
     public static explicit operator bool(Variant value) => value.GetTypedValue<bool>(VariantType.Bool);
 

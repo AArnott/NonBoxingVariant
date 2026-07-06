@@ -1,6 +1,23 @@
 ﻿public class VariantTests
 {
     [Test]
+    public async Task SyntaxSugar()
+    {
+        Variant v = 5;
+        switch (v)
+        {
+            case int i:
+                await Assert.That(i).IsEqualTo(5);
+                break;
+            default:
+                Assert.Fail("Unrecognized type");
+                break;
+        }
+
+        await Assert.That(v is int).IsTrue();
+    }
+
+    [Test]
     public async Task BooleanValue()
     {
         await AssertRoundTrip(new Variant(true), true, static variant =>

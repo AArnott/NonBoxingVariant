@@ -63,7 +63,18 @@ Variant signed = new(42);
 signed.TryGetValue(out uint asUInt32); // False
 ```
 
-Because there is no public discriminator property, the typical pattern is to probe the types you expect:
+If you're using a C# version with [union syntax support](https://learn.microsoft.com/dotnet/csharp/language-reference/proposals/unions), you can use normal type patterns such as `value is int` and switch expressions:
+
+```csharp
+string result = value switch
+{
+    int i => $"It's an int32: {i}",
+    Guid g => $"It's a guid: {g}",
+    _ => "It's something else",
+};
+```
+
+Without union syntax support, the typical pattern is to probe the types you expect with `TryGetValue`:
 
 ```csharp
 static string Describe(Variant value)

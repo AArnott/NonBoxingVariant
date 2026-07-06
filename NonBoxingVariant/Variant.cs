@@ -11,6 +11,12 @@ using IntegerMagnitude = System.UInt64;
 
 namespace NonBoxingVariant;
 
+/// <summary>
+/// A value type that can hold a value of one of several specified types, without boxing.
+/// </summary>
+/// <remarks>
+/// See also <see href="https://github.com/JeremyKuhne/touki/blob/main/touki/Touki/Value.cs">this alternative implementation</see>.
+/// </remarks>
 [Union]
 public readonly struct Variant : IEquatable<Variant>
 {
